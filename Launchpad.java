@@ -259,9 +259,12 @@ public class Launchpad extends AbstractLaunchpadController implements LaunchpadL
 					}
 				}
 			}
+		} else {
+			throw new IllegalStateException("This LaunchpadController is currently not preparing.");
 		}
 	}
 	
+	// TODO: Make this usable for all three modes
 	public void transmitChanges() {
 		transmitChanges(false);
 	}
@@ -288,6 +291,10 @@ public class Launchpad extends AbstractLaunchpadController implements LaunchpadL
 	}
 	
 	public void reset() {
+		if (doubleBufferingMode != DoubleBufferingMode.NONE) {
+			preparationLevel = 0;
+		}
+		
 		resetCaches(padCache, buttonCache);
 		
 		launchpad.reset();

@@ -6,14 +6,18 @@ public class Utils {
 	public static void printAsText(LaunchpadController controller) { 
 		for (int y = 0; y < 8; y++) {
 			for (int x = 0; x < 8; x++) {
-				System.out.print(controller.getPadColor(x, y).isBlack() ? "░░" : "██");
+				System.out.print(controller.getPadColor(x, y).isInvisible() ? "░░" : "██");
 			}
 			System.out.println();
 		}
 	}
 	
 	static byte generateOldColorCode(Color color, boolean copy, boolean clear) {
-		byte colorByte = (byte) ((Math.min(3, Math.round(color.getGreen() / (255 / 3))) << 4) + Math.min(3, Math.round(color.getRed() / (255 / 3))));
+		//~ int red = Math.round(color.getRed() / (255 / 3));
+		//~ int green = Math.round(color.getGreen() / (255 / 3));
+		int red = color.getRed() / 64;
+		int green = color.getGreen() / 64;
+		byte colorByte = (byte) ((green << 4) | red);
 		if (copy) colorByte |= 1 << 2;
 		if (clear) colorByte |= 1 << 3;
 		return colorByte;

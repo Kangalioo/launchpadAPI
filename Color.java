@@ -49,6 +49,9 @@ public class Color {
 		this(0, 0, 0, 255);
 	}
 	
+	/**
+	 * @return the underlying <code>java.awt.Color</code>.
+	 */
 	public java.awt.Color getColor() {
 		return color;
 	}
@@ -69,11 +72,18 @@ public class Color {
 		return color.getAlpha();
 	}
 	
-	public boolean isBlack() {
-		return (getRed() + getGreen() + getBlue()) == 0;
+	/**
+	 * @return true when the color is displayed as black on a Launchpad device
+	 */
+	public boolean isInvisible() {
+		return applyAlpha().equals(Color.BLACK);
 	}
 	
-	// Full alpha -> black
+	/**
+	 * Converts the transparency to pure RGB. In this case, transparency gets
+	 * translated to black (see <code>applyAlphaInverted()</code> for white).
+	 * @return The RGB-only color.
+	 */
 	public Color applyAlpha() {
 		return new Color((int) (getRed() * (1 - getAlpha() / 255.0)),
 				(int) (getGreen() * (1 - getAlpha() / 255.0)),
@@ -81,7 +91,11 @@ public class Color {
 				0);
 	}
 	
-	// Full alpha -> white
+	/**
+	 * Convert the transparency to pure RGB. In this case, transparency gets
+	 * translated to white (see <code>applyAlpha()</code> for black).
+	 * @return The RGB-only color.
+	 */
 	public Color applyAlphaInverted() {
 		return new Color((int) ((getRed() - 255) * (1 - getAlpha() / 255.0)) + 255,
 				(int) ((getGreen() - 255) * (1 - getAlpha() / 255.0)) + 255,
@@ -89,7 +103,12 @@ public class Color {
 				0);
 	}
 	
-	// This ignores alpha
+	/**
+	 * Multiply this color the given color.
+	 * 
+	 * @param c The given color.
+	 * @return The resulting color.
+	 */
 	public Color multiply(Color c) {
 		return new Color((int) (getRed() * (c.getRed() / 255.0)),
 				(int) (getGreen() * (c.getGreen() / 255.0)),
@@ -97,13 +116,18 @@ public class Color {
 				getAlpha());
 	}
 	
-	// Layers colors on top of each other, first element at bottom (subtractive adding)
+	/**
+	 * Layer multiple colors subtractively, where the first element given is
+	 * assumed to be at the bottom of the stack.
+	 * @param colors The layered colors.
+	 * @return The resulting color
+	 */
 	// TODO: Make this work correctly
 	public static Color layer(Color... colors) {
 		double alpha = 1;
 		Color color = new Color();
 		
-		// First method
+		// Hack for my personal use case
 		for (int i = colors.length - 1; i >= 0; i--) {
 			Color c = colors[i];
 			if (c.getAlpha() < 128) {
@@ -112,22 +136,23 @@ public class Color {
 			}
 		}
 		
-		// Second method
-		//for (Color c : colors) {
-			//alpha *= (c.getAlpha() / 256.0);
-			//int redChange = c.getRed() - color.getRed();
-			//int greenChange = c.getGreen() - color.getGreen();
-			//int blueChange = c.getBlue() - color.getBlue();
-			//redChange *= c.getAlpha() / 256.0;
-			//greenChange *= c.getAlpha() / 256.0;
-			//blueChange *= c.getAlpha() / 256.0;
-			//color = new Color(color.getRed() + redChange, color.getGreen() + greenChange, color.getBlue() + blueChange);
-		//}
-		//color = new Color(color.getRed(), color.getGreen(), color.getBlue(), (int) Math.round(alpha * 256));
+		// Proper solution
+		//~ for (Color c : colors) {
+			//~ alpha *= (c.getAlpha() / 256.0);
+			//~ int redChange = c.getRed() - color.getRed();
+			//~ int greenChange = c.getGreen() - color.getGreen();
+			//~ int blueChange = c.getBlue() - color.getBlue();
+			//~ redChange *= c.getAlpha() / 256.0;
+			//~ greenChange *= c.getAlpha() / 256.0;
+			//~ blueChange *= c.getAlpha() / 256.0;
+			//~ color = new Color(color.getRed() + redChange, color.getGreen() + greenChange, color.getBlue() + blueChange);
+		//~ }
+		//~ color = new Color(color.getRed(), color.getGreen(), color.getBlue(), (int) Math.round(alpha * 256));
 		
 		return color;
 	}
 	
+	@Override
 	public boolean equals(Object o) {
 		if (o instanceof Color) {
 			Color c = (Color) o;
@@ -140,6 +165,14 @@ public class Color {
 		}
 	}
 	
+	/**
+	 * Indicated whether Object o is a color and <b>looks</b> the same. This
+	 * method will produce true when comparing <code>Color.BLACK</code> and
+	 * <code>Color.TRANSPARENT</code>.
+	 * 
+	 * @param o the object with which to compare.
+	 * @return true if the color looks the same.
+	 */
 	public boolean equalsVisually(Object o) {
 		if (o instanceof Color) {
 			return applyAlpha().equals(((Color) o).applyAlpha());
@@ -152,11 +185,11 @@ public class Color {
 		return color.toString();
 	}
 	
-	@Deprecated
-	public static Color makeColorForS(int red, int green) {
-		return new Color(red, green);
-	}
-	
+	/**
+	 * You guessed it, this makes you a random color.
+	 * 
+	 * @return the random color.
+	 */
 	public static Color makeRandom() {
 		return new Color((int) (Math.random() * 256), (int) (Math.random() * 256), (int) (Math.random() * 256));
 	}

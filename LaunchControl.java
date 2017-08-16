@@ -6,6 +6,8 @@ public class LaunchControl extends AbstractLaunchpad {
 	public static final int WIDTH = 8, HEIGHT = 1, CONTROL_BUTTONS = 4;
 	
 	
+	private LaunchControlListener launchControlListener = null;
+	
 	private int currentTemplate = 0;
 	
 	
@@ -31,10 +33,19 @@ public class LaunchControl extends AbstractLaunchpad {
 			int status = msg.getStatus();
 			boolean pressed = msg.getData2() > 0;
 			if (status >= 176 && status < 192) {
-				if (pressed) {
-					getListener().buttonPressed(index);
+				if (index < 100) {
+					if (index > 40) {
+						index -= 12;
+					}
+					index -= 21;
+					
+					if (launchControlListener != null) launchControlListener.knobChanged(index, msg.getData2());
 				} else {
-					getListener().buttonReleased(index);
+					if (pressed) {
+						getListener().buttonPressed(index);
+					} else {
+						getListener().buttonReleased(index);
+					}
 				}
 			} else if (status >= 128 && status < 160) {
 				if (index >= 9 && index <= 12) {
@@ -82,6 +93,17 @@ public class LaunchControl extends AbstractLaunchpad {
 	
 	public int isControlButton(int x, int y) {
 		return -1; // See comment in isPadInBounds
+	}
+	
+	@Override
+	public void setListener(LaunchpadListener listener) {
+		// When we have an advanced listener...
+		if (listener instanceof LaunchControlListener) {
+			// ...then we want to save it, when we have to access its functionality
+			launchControlListener = (LaunchControlListener) listener;
+		}
+		
+		super.setListener(listener);
 	}
 	
 	private void check(int x, int y) {

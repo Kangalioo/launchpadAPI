@@ -105,7 +105,7 @@ public abstract class AbstractLaunchpad implements LowLevelLaunchpad {
 	}
 	
 	public void closeInput() {
-		input.close();
+		if (input != null) input.close();
 		input = null;
 	}
 	
@@ -116,7 +116,7 @@ public abstract class AbstractLaunchpad implements LowLevelLaunchpad {
 	}
 	
 	public void closeOutput() {
-		output.close();
+		if (output != null) output.close();
 		output = null;
 	}
 	
