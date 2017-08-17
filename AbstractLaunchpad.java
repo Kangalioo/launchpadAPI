@@ -15,6 +15,7 @@ public abstract class AbstractLaunchpad implements LowLevelLaunchpad {
 	private boolean doubleBuffering = false;
 	private boolean treatButtonsAsPads = false;
 	
+	private Exception error = null;
 	private int sentMessages = 0;
 	
 	
@@ -91,17 +92,21 @@ public abstract class AbstractLaunchpad implements LowLevelLaunchpad {
 		sendMessage(0xB0, 0, controlByte);
 	}
 	
-	public void openInput(MidiDevice inputDevice) throws MidiUnavailableException {
-		if (!inputDevice.isOpen()) inputDevice.open();
-		
-		input = inputDevice.getTransmitter();
-		input.setReceiver(new Receiver() {
-			public void send(MidiMessage msg, long timestamp) {
-				processMessage(msg);
-			}
+	public void openInput(MidiDevice inputDevice) {
+		try {
+			if (!inputDevice.isOpen()) inputDevice.open();
 			
-			public void close() {};
-		});
+			input = inputDevice.getTransmitter();
+			input.setReceiver(new Receiver() {
+				public void send(MidiMessage msg, long timestamp) {
+					processMessage(msg);
+				}
+				
+				public void close() {};
+			});
+		} catch (MidiUnavailableException e) {
+			error = e;
+		}
 	}
 	
 	public void closeInput() {
@@ -109,10 +114,14 @@ public abstract class AbstractLaunchpad implements LowLevelLaunchpad {
 		input = null;
 	}
 	
-	public void openOutput(MidiDevice outputDevice) throws MidiUnavailableException {
-		if (!outputDevice.isOpen()) outputDevice.open();
-		
-		output = outputDevice.getReceiver();
+	public void openOutput(MidiDevice outputDevice) {
+		try {
+			if (!outputDevice.isOpen()) outputDevice.open();
+			
+			output = outputDevice.getReceiver();
+		} catch (MidiUnavailableException e) {
+			error = e;
+		}
 	}
 	
 	public void closeOutput() {
@@ -146,5 +155,11 @@ public abstract class AbstractLaunchpad implements LowLevelLaunchpad {
 	
 	public void treatButtonsAsPads(boolean state) {
 		treatButtonsAsPads = state;
+	}
+	
+	public Exception checkError() {
+		Exception ex = error;
+		error = null;
+		return ex;
 	}
 }

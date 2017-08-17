@@ -2,8 +2,8 @@ import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiUnavailableException;
 import java.util.ArrayList;
 
-// TODO: Fix control button system. It's a mess.
-public class LaunchpadLayout extends AbstractLaunchpadController implements LaunchpadController, LaunchpadListener {
+// TODO: Automatically detect width, height, xOffset and yOffset
+public class LaunchpadLayout extends AbstractLaunchpadController implements LaunchpadController {
 	private class Device {
 		Launchpad launchpad;
 		int xOffset, yOffset, rot;
@@ -40,14 +40,24 @@ public class LaunchpadLayout extends AbstractLaunchpadController implements Laun
 	}
 	
 	
-	private LaunchpadListener listener;
-	
 	private ArrayList<Device> devices = new ArrayList<>();
 	
 	private ArrayList<Pad> controlButtons = new ArrayList<>();
+	private int width, height, xOffset, yOffset;
 	
 	private boolean ignoreIncorrectCoordinates = false;
 	
+	private DoubleBufferingMode doubleBufferingMode;
+	
+	
+	// THIS METHOD SHOULD  R E A L L Y  BE REMOVED AND REPLACED
+	// WITH PROPER AUTOMATIC DETECTION
+	public void setSizeAndOffset(int width, int height, int xOffset, int yOffset) {
+		this.width = width;
+		this.height = height;
+		this.xOffset = xOffset;
+		this.yOffset = yOffset;
+	}
 	
 	public void addDevice(Launchpad launchpad, int x, int y, int rot) {
 		devices.add(new Device(launchpad, x, y, rot));
@@ -82,23 +92,35 @@ public class LaunchpadLayout extends AbstractLaunchpadController implements Laun
 		addControlButtons(xo, yo, width, height, false);
 	}
 	
-	public void setListener(LaunchpadListener listener) {
-		this.listener = listener;
+	public int getWidth() {
+		return width;
+	}
+	
+	public int getHeight() {
+		return height;
+	}
+	
+	public int getXOffset() {
+		return xOffset;
+	}
+	
+	public int getYOffset() {
+		return yOffset;
 	}
 	
 	public void padPressed(int x, int y) {
-		if (listener != null) {
+		if (getListener() != null) {
 			int index = controlButtons.indexOf(new Pad(x, y, this));
-			if (!treatButtonsAsPads() && index != -1) listener.buttonPressed(index);
-			else if (isPadInBounds(x, y)) listener.padPressed(x, y);
+			if (!treatButtonsAsPads() && index != -1) getListener().buttonPressed(index);
+			else if (isPadInBounds(x, y)) getListener().padPressed(x, y);
 		}
 	}
 	
 	public void padReleased(int x, int y) {
-		if (listener != null) {
+		if (getListener() != null) {
 			int index = controlButtons.indexOf(new Pad(x, y, this));
-			if (!treatButtonsAsPads() && index != -1) listener.buttonReleased(index);
-			else if (isPadInBounds(x, y)) listener.padReleased(x, y);
+			if (!treatButtonsAsPads() && index != -1) getListener().buttonReleased(index);
+			else if (isPadInBounds(x, y)) getListener().padReleased(x, y);
 		}
 	}
 	
@@ -189,25 +211,12 @@ public class LaunchpadLayout extends AbstractLaunchpadController implements Laun
 		devices.forEach(d -> d.launchpad.redraw());
 	}
 	
-	public boolean isFlashingModeActivated() {
-		// TODO
-		return false;
-	}
-	
-	public void flash() {
-		// TODO
-	}
-	
-	public void enterFlashingMode() {
-		// TODO
-	}
-	
-	public void leaveFlashingMode() {
-		// TODO
-	}
-	
 	public void setDoubleBufferingMode(DoubleBufferingMode doubleBufferingMode) {
 		devices.forEach(d -> d.launchpad.setDoubleBufferingMode(doubleBufferingMode));
+	}
+	
+	public DoubleBufferingMode getDoubleBufferingMode() {
+		return doubleBufferingMode;
 	}
 	
 	public boolean isPreparing() {
@@ -232,8 +241,10 @@ public class LaunchpadLayout extends AbstractLaunchpadController implements Laun
 		clearButtons();
 	}
 	
+	@Deprecated
 	public void clearPads() {
-		// TODO
+		// TODO: This is a hack
+		devices.forEach(d -> d.launchpad.clear());
 	}
 	
 	public void clearButtons() {
@@ -246,6 +257,22 @@ public class LaunchpadLayout extends AbstractLaunchpadController implements Laun
 		devices.forEach(d -> d.launchpad.reset());
 	}
 	
+	public void openInput(MidiDevice device) {
+		throw new UnsupportedOperationException();
+	}
+	
+	public void openOutput(MidiDevice device) {
+		throw new UnsupportedOperationException();
+	}
+	
+	public boolean isInputOpen() {
+		throw new UnsupportedOperationException();
+	}
+	
+	public boolean isOutputOpen() {
+		throw new UnsupportedOperationException();
+	}
+	
 	public void closeInput() {
 		devices.forEach(d -> d.launchpad.closeInput());
 	}
@@ -254,9 +281,14 @@ public class LaunchpadLayout extends AbstractLaunchpadController implements Laun
 		devices.forEach(d -> d.launchpad.closeOutput());
 	}
 	
-	public void close() {
-		closeInput();
-		closeOutput();
+	public Exception checkError() {
+		for (Device d : devices) {
+			Exception ex = d.launchpad.checkError();
+			if (ex != null) {
+				return ex;
+			}
+		}
+		return null;
 	}
 	
 	public void ignoreIncorrectCoordinates(boolean state) {
@@ -277,9 +309,5 @@ public class LaunchpadLayout extends AbstractLaunchpadController implements Laun
 		if (!isButtonInBounds(index)) {
 			throw new IndexOutOfBoundsException("Button index out of bounds: index = " + index + ".");
 		}
-	}
-	
-	public LaunchpadListener getListener() {
-		return listener;
 	}
 }

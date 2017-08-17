@@ -3,7 +3,6 @@ import javax.sound.midi.MidiUnavailableException;
 import java.util.Arrays;
 
 public class Launchpad extends AbstractLaunchpadController implements LaunchpadListener, LaunchpadController {
-	private LaunchpadListener listener;
 	private LowLevelLaunchpad launchpad;
 	
 	private int width, height, controlButtons;
@@ -46,24 +45,20 @@ public class Launchpad extends AbstractLaunchpadController implements LaunchpadL
 		resetCaches(preparationPadCache, preparationButtonCache);
 	}
 	
-	public void setListener(LaunchpadListener listener) {
-		this.listener = listener;
+	public int getWidth() {
+		return launchpad.getWidth();
 	}
 	
-	public void padPressed(int x, int y) {
-		listener.padPressed(x, y);
+	public int getHeight() {
+		return launchpad.getHeight();
 	}
 	
-	public void padReleased(int x, int y) {
-		listener.padReleased(x, y);
+	public int getXOffset() {
+		return 0;
 	}
 	
-	public void buttonPressed(int index) {
-		if (getListener() != null) listener.buttonPressed(index);
-	}
-	
-	public void buttonReleased(int index) {
-		if (getListener() != null) listener.buttonReleased(index);
+	public int getYOffset() {
+		return 0;
 	}
 	
 	public void setPadColor(int x, int y, Color color) {
@@ -208,6 +203,10 @@ public class Launchpad extends AbstractLaunchpadController implements LaunchpadL
 		}
 	}
 	
+	public DoubleBufferingMode getDoubleBufferingMode() {
+		return doubleBufferingMode;
+	}
+	
 	public boolean isPreparing() {
 		return preparationLevel > 0;
 	}
@@ -350,7 +349,7 @@ public class Launchpad extends AbstractLaunchpadController implements LaunchpadL
 		return launchpad.isControlButton(x, y);
 	}
 	
-	public void openInput(MidiDevice inputDevice) throws MidiUnavailableException {
+	public void openInput(MidiDevice inputDevice) {
 		launchpad.openInput(inputDevice);
 	}
 	
@@ -358,8 +357,9 @@ public class Launchpad extends AbstractLaunchpadController implements LaunchpadL
 		if (isInputOpen()) launchpad.closeInput();
 	}
 	
-	public void openOutput(MidiDevice outputDevice) throws MidiUnavailableException {
+	public void openOutput(MidiDevice outputDevice) {
 		launchpad.openOutput(outputDevice);
+			
 		reset();
 	}
 	
@@ -378,13 +378,8 @@ public class Launchpad extends AbstractLaunchpadController implements LaunchpadL
 		}
 	}
 	
-	public void close() {
-		closeInput();
-		closeOutput();
-	}
-	
-	public LaunchpadListener getListener() {
-		return listener;
+	public Exception checkError() {
+		return launchpad.checkError();
 	}
 	
 	public LowLevelLaunchpad getLowLevelLaunchpad() {

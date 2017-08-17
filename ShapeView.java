@@ -34,7 +34,7 @@ public class ShapeView implements Iterable<Pad>, ReadablePadStorage {
 	}
 	
 	public Color getPadColor(int x, int y) {
-		return shape.getPadColor(x, y).multiply(colorFilter);
+		return shape.getPadColor(x - this.x, y - this.y).multiply(colorFilter);
 	}
 	
 	public void setPadColor(int x, int y, Color color) {

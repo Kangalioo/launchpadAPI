@@ -3,9 +3,9 @@ import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiUnavailableException;
 
 public class Utils {
-	public static void printAsText(LaunchpadController controller) { 
-		for (int y = 0; y < 8; y++) {
-			for (int x = 0; x < 8; x++) {
+	public static void printAsText(ReadablePadStorage controller) { 
+		for (int y = 0; y < controller.getHeight(); y++) {
+			for (int x = 0; x < controller.getWidth(); x++) {
 				System.out.print(controller.getPadColor(x, y).isInvisible() ? "░░" : "██");
 			}
 			System.out.println();

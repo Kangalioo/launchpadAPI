@@ -2,6 +2,33 @@ public abstract class AbstractLaunchpadController implements LaunchpadController
 	private boolean allowsShapeCutting = false;
 	private boolean treatButtonsAsPads = false;
 	
+	private LaunchpadListener listener;
+	
+	
+	public void setListener(LaunchpadListener listener) {
+		this.listener = listener;
+	}
+	
+	public LaunchpadListener getListener() {
+		return listener;
+	}
+	
+	public void padPressed(int x, int y) {
+		if (getListener() != null) getListener().padPressed(x, y);
+	}
+	
+	public void padReleased(int x, int y) {
+		if (getListener() != null) getListener().padReleased(x, y);
+	}
+	
+	public void buttonPressed(int index) {
+		if (getListener() != null) getListener().buttonPressed(index);
+	}
+	
+	public void buttonReleased(int index) {
+		if (getListener() != null) getListener().buttonReleased(index);
+	}
+	
 	public void allowShapeCutting(boolean state) {
 		allowsShapeCutting = state;
 	}

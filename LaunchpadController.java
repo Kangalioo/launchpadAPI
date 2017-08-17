@@ -6,14 +6,24 @@ public interface LaunchpadController extends LaunchpadInterface, ReadablePadStor
 	 * This method is used to tell the controller if an exception should be
 	 * thrown when a drawn shape does not fit onto the grid.
 	 * 
-	 * @param state True if no exceptions should be thrown.
+	 * @param state true if no exceptions should be thrown.
 	 */
 	public void allowShapeCutting(boolean state);
 	
 	/**
-	 * @return Returns true if no exceptions should be thrown when a drawn shape does not fit onto the grid.
+	 * @return true if no exceptions should be thrown when a drawn shape does not fit onto the grid.
 	 */
 	public boolean allowsShapeCutting();
+	
+	/**
+	 * @return the x offset of this controller.
+	 */
+	public int getXOffset();
+	
+	/**
+	 * @return the y offset of this controller.
+	 */
+	public int getYOffset();
 	
 	/**
 	 * Displays the given <code>Shape</code> at the given coordinates. This is the same as
@@ -30,7 +40,7 @@ public interface LaunchpadController extends LaunchpadInterface, ReadablePadStor
 	/**
 	 * Displays the given <code>ShapeView</code>.
 	 * 
-	 * @param shapeView The displayed <code>ShapeView</code>.
+	 * @param shapeView the displayed <code>ShapeView</code>.
 	 */
 	public void display(ShapeView shapeView);
 	
@@ -74,7 +84,15 @@ public interface LaunchpadController extends LaunchpadInterface, ReadablePadStor
 	public void setDoubleBufferingMode(DoubleBufferingMode doubleBufferingMode);
 	
 	/**
-	 * @return Returns true if the <code>LaunchpadController</code> is currently
+	 * Returns an object which indicates how the <code>LaunchpadController</code>
+	 * behaves when a double buffering functionality is used.
+	 * 
+	 * @return doubleBufferingMode the double buffering mode.
+	 */
+	public DoubleBufferingMode getDoubleBufferingMode();
+	
+	/**
+	 * @return true if the <code>LaunchpadController</code> is currently
 	 * in the preparing mode.
 	 */
 	public boolean isPreparing();
@@ -122,6 +140,16 @@ public interface LaunchpadController extends LaunchpadInterface, ReadablePadStor
 	 * and the current double buffering state.
 	 */
 	public void reset();
+	
+	/**
+	 * Opens a midi input.
+	 */
+	public void openInput(MidiDevice device);
+	
+	/**
+	 * Opens a midi output.
+	 */
+	public void openOutput(MidiDevice device);
 	
 	/**
 	 * Closes the midi input.
