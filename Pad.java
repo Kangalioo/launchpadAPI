@@ -1,24 +1,29 @@
 public class Pad {
 	private int x, y;
-	private ReadablePadStorage l;
+	private PadModule l;
 	
-	private boolean readOnly = false;
+	private boolean readable, writable;
 	
-	public Pad(int x, int y, ReadablePadStorage l) {
+	public Pad(int x, int y, PadModule l) {
 		this.x = x;
 		this.y = y;
 		this.l = l;
+		readable = (l instanceof PadSource);
+		writable = (l instanceof PadTarget);
 	}
 	
 	public Color getColor() {
-		return l.getPadColor(x, y);
+		if (!readable) {
+			throw new UnsupportedOperationException("PadModule is not readable.");
+		}
+		return ((PadSource) l).getPadColor(x, y);
 	}
 	
 	public void setColor(Color color) {
-		if (readOnly) {
-			throw new UnsupportedOperationException("Pad is read only.");
+		if (!writable) {
+			throw new UnsupportedOperationException("PadModule is not writable.");
 		}
-		l.setPadColor(x, y, color);
+		((PadTarget) l).setPadColor(x, y, color);
 	}
 	
 	public int getX() {
@@ -27,10 +32,6 @@ public class Pad {
 	
 	public int getY() {
 		return y;
-	}
-	
-	public void setReadOnly(boolean state) {
-		this.readOnly = state;
 	}
 	
 	// Only compares x and y

@@ -53,14 +53,15 @@ public abstract class AbstractLaunchpadController implements LaunchpadController
 		setButtonColor(index, Color.layer(getButtonColor(index), color));
 	}
 	
-	public void displayShape(Shape shape, int xOffset, int yOffset) {
-		ShapeView shapeView = new ShapeView(shape, xOffset, yOffset);
+	public void display(PadSource source, int xOffset, int yOffset) {
+		BasicManipulator shapeView = new BasicManipulator(source);
+		shapeView.setOffset(xOffset, yOffset);
 		
 		display(shapeView);
 	}
 	
-	public void display(ShapeView shape) {
-		for (Pad pad : shape) {
+	public void display(PadSource shape) {
+		for (Pad pad : Utils.padSourceIterable(shape)) {
 			if (isPadInBounds(pad.getX(), pad.getY())) {
 				layerPadColor(pad.getX(), pad.getY(), pad.getColor());
 			} else if (!allowsShapeCutting) {

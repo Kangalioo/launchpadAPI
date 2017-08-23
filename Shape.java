@@ -2,7 +2,12 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Arrays;
 
-public class Shape implements Iterable<Pad>, ReadablePadStorage {
+import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+
+public class Shape implements Iterable<Pad>, PadStorage {
 	private int width, height;
 	private Color[][] raster;
 	
@@ -19,17 +24,36 @@ public class Shape implements Iterable<Pad>, ReadablePadStorage {
 		raster = padArray;
 	}
 	
-	// Clone
-	public Shape(Shape shape) {
+	/**
+	 * Can be used for cloning, but it is also very useful for creating a
+	 * static shape of a manipulator.
+	 */
+	public Shape(PadSource shape) {
 		width = shape.getWidth();
 		height = shape.getHeight();
 		raster = new Color[width][height];
 		int i = 0;
-		for (Color[] row : shape.getRawRaster()) {
-			raster[i] = row.clone();
-			i++;
+		for (int x = 0; x < width; x++) {
+			for (int y = 0; y < height; y++) {
+				raster[x][y] = shape.getPadColor(x, y);
+			}
 		}
 		
+	}
+	
+	public static Shape readImage(File file) throws IOException {
+		BufferedImage image = ImageIO.read(file);
+		
+		Shape shape = new Shape(image.getWidth(), image.getHeight());
+		for (int y = 0; y < image.getHeight(); y++) {
+			for (int x = 0; x < image.getWidth(); x++) {
+				java.awt.Color javaColor = new java.awt.Color(image.getRGB(x, y), true);
+				Color color = new Color(javaColor.getRed(), javaColor.getGreen(), javaColor.getBlue(), 255 - javaColor.getAlpha());
+				shape.setPadColor(x, y, color);
+			}
+		}
+		
+		return shape;
 	}
 	
 	public Color[][] getRawRaster() {

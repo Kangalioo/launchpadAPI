@@ -7,7 +7,10 @@ public class LaunchpadPane extends AbstractLaunchpadController {
 	private int width, height, xOffset, yOffset;
 	
 	private Shape directDrawing;
-	private ArrayList<ShapeView> shapes = new ArrayList<>();
+	private ArrayList<PadSource> sources = new ArrayList<>();
+	
+	private boolean automaticallyRemoveAnimations = true;
+	
 	
 	public LaunchpadPane(LaunchpadController launchpad) {
 		this.launchpad = launchpad;
@@ -36,12 +39,30 @@ public class LaunchpadPane extends AbstractLaunchpadController {
 		return yOffset;
 	}
 	
-	public void addShape(ShapeView view) {
-		shapes.add(view);
+	public void addSource(PadSource source) {
+		sources.add(source);
 	}
 	
-	public ShapeView[] getShapes() {
-		return shapes.toArray(new ShapeView[shapes.size()]);
+	public int getSourceAmount() {
+		return sources.size();
+	}
+	
+	public int getAnimationAmount() {
+		return (int) sources.stream()
+			.filter(e -> e instanceof Animation)
+			.count();
+	}
+	
+	public void removeSource(PadSource source) {
+		sources.remove(source);
+	}
+	
+	public void removeAllSources() {
+		sources.clear();
+	}
+	
+	public PadSource[] getSources() {
+		return sources.toArray(new PadSource[sources.size()]);
 	}
 	
 	public void setButtonColor(int index, Color color) {
@@ -68,15 +89,29 @@ public class LaunchpadPane extends AbstractLaunchpadController {
 		return launchpad.getDoubleBufferingMode();
 	}
 	
+	public void moveAnimations() {
+		for (int i = 0; i < sources.size(); i++) {
+			if (sources.get(i) instanceof Animation) {
+				Animation animation = (Animation) sources.get(i);
+				if (automaticallyRemoveAnimations && !Utils.intersects(this, animation)) {
+					sources.remove(i);
+					i--;
+				} else if (!animation.isLastFrame()) {
+					animation.nextFrame();
+				}
+			}
+		}
+	}
+	
 	public void redraw() {
 		prepare();
 		clear();
-		// Cannot use because Java is getting on nerves
+		// Cannot use for each loop because Java is getting on nerves
 		// with ConcurrentModificationException
-		for (int i = 0; i < shapes.size(); i++) {
-			launchpad.display(shapes.get(i));
+		for (int i = 0; i < sources.size(); i++) {
+			launchpad.display(sources.get(i));
 		}
-		launchpad.displayShape(directDrawing, xOffset, yOffset);
+		launchpad.display(directDrawing, xOffset, yOffset);
 		present();
 	}
 	

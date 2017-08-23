@@ -1,7 +1,7 @@
 import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiUnavailableException;
 
-public interface LaunchpadController extends LaunchpadInterface, ReadablePadStorage {
+public interface LaunchpadController extends LaunchpadInterface, PadStorage {
 	/**
 	 * This method is used to tell the controller if an exception should be
 	 * thrown when a drawn shape does not fit onto the grid.
@@ -26,23 +26,21 @@ public interface LaunchpadController extends LaunchpadInterface, ReadablePadStor
 	public int getYOffset();
 	
 	/**
-	 * Displays the given <code>Shape</code> at the given coordinates. This is the same as
-	 * calling <code>display(new ShapeView(shape, x, y))</code>.
+	 * Displays the given <code>PadSource</code> at the given coordinates. This is the same as
+	 * calling <code>display(new BasicManipulator(shape, x, y))</code>.
 	 * 
-	 * @param shape The displayed <code>Shape</code>.
-	 * @param x The x coordinate.
-	 * @param y The y coordinate.
+	 * @param shape the displayed <code>PadSource</code>.
+	 * @param x the x coordinate.
+	 * @param y the y coordinate.
 	 */
-	public default void displayShape(Shape shape, int x, int y) {
-		display(new ShapeView(shape, x, y));
-	}
+	public void display(PadSource source, int x, int y);
 	
 	/**
-	 * Displays the given <code>ShapeView</code>.
+	 * Displays the given <code>PadSource</code>.
 	 * 
-	 * @param shapeView the displayed <code>ShapeView</code>.
+	 * @param shapeView the displayed <code>PadSource</code>.
 	 */
-	public void display(ShapeView shapeView);
+	public void display(PadSource source);
 	
 	/**
 	 * Sets the color of a control button.
@@ -66,14 +64,6 @@ public interface LaunchpadController extends LaunchpadInterface, ReadablePadStor
 	 * <code>LaunchpadController</code>.
 	 */
 	public void redraw();
-	
-	//~ public boolean isFlashingModeActivated();
-	
-	//~ public void flash();
-	
-	//~ public void enterFlashingMode();
-	
-	//~ public void leaveFlashingMode();
 	
 	/**
 	 * Sets how the <code>LaunchpadController</code> behaves when a double

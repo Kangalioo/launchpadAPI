@@ -1,9 +1,12 @@
 import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiUnavailableException;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.awt.geom.Rectangle2D;
 
 public class Utils {
-	public static void printAsText(ReadablePadStorage controller) { 
+	public static void printAsText(PadSource controller) { 
 		for (int y = 0; y < controller.getHeight(); y++) {
 			for (int x = 0; x < controller.getWidth(); x++) {
 				System.out.print(controller.getPadColor(x, y).isInvisible() ? "░░" : "██");
@@ -41,9 +44,9 @@ public class Utils {
 		return new int[]{x, y};
 	}
 	
-	// TODO_URGENT: Revise this method
+	// TODO: Revise this method
 	// <return>: Array with length 2: index 0 = input device, index 1 = output device
-	private static MidiDevice[] findDevice(String name) {
+	private static MidiDevice[] findDevice(String name) throws MidiUnavailableException {
 		MidiDevice inputDevice = null;
 		MidiDevice outputDevice = null;
 		
@@ -63,11 +66,14 @@ public class Utils {
 				}
 			}
 		}
+		if (inputDevice == null || outputDevice == null) {
+			throw new MidiUnavailableException("The device was not found.");
+		}
 		
 		return new MidiDevice[]{inputDevice, outputDevice};
 	}
 	
-	public static MidiDevice[] findLaunchpad(LowLevelLaunchpad device) {
+	public static MidiDevice[] findLaunchpad(LowLevelLaunchpad device) throws MidiUnavailableException {
 		if (device instanceof LaunchpadS) {
 			return findDevice("S");
 		} else if (device instanceof LaunchControl) {
@@ -75,5 +81,41 @@ public class Utils {
 		}
 		
 		throw new IllegalArgumentException("Device not supported.");
+	}
+	
+	/**
+	 * @return an Iterable<Pad> which iterates through the smallest rectangle
+	 *  which covers all pads in the PadSource.
+	 */
+	static Iterable<Pad> padSourceIterable(PadSource source) {
+		return new Iterable<Pad>() {
+			public Iterator<Pad> iterator() {
+				return new Iterator<Pad>() {
+					private int x = 0, y = 0;
+					
+					public boolean hasNext() {
+						return y < source.getHeight();
+					}
+					
+					public Pad next() {
+						if (y >= source.getHeight()) {
+							throw new NoSuchElementException();
+						}
+						Pad pad = new Pad(x + source.getXOffset(), y + source.getYOffset(), source);
+						if (++x == source.getWidth()) {
+							x = 0;
+							y++;
+						}
+						return pad;
+					}
+				};
+			}
+		};
+	}
+	
+	static boolean intersects(PadModule m1, PadModule m2) {
+		return 
+			(new Rectangle2D.Double(m1.getXOffset(), m1.getYOffset(), m1.getWidth(), m1.getHeight())).intersects(
+			new Rectangle2D.Double(m2.getXOffset(), m2.getYOffset(), m2.getWidth(), m2.getHeight()));
 	}
 }
